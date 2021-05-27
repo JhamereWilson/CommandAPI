@@ -25,7 +25,7 @@ namespace CommandApi.Controllers
             var commandItems = _repository.GetAllCommands();
             return Ok(_mapper.Map<IEnumerable<CommandReadDTO>>(commandItems)); // returns http 200 result code and passes back result json command data
         }
-        [HttpGet]
+        [HttpGet("{id}", Name = "GetCommandById")]
         public ActionResult<CommandReadDTO> GetCommandById(int id)
         {
             var commandItem = _repository.GetCommandById(id);
