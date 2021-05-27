@@ -6,19 +6,39 @@ using CommandApi.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Data.SqlClient;
+using AutoMapper;
 
 namespace CommandApi
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public IConfiguration Configuration { get; }
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
         public void ConfigureServices(IServiceCollection services)
         {
+            //Connection String Builder Using User Secrets
+            var builder = new SqlConnectionStringBuilder();
+            builder.ConnectionString = Configuration.GetConnectionString("CommandApiConnection");
+            builder.UserID = Configuration["UserID"];
+            builder.Password = Configuration["Password"];
+
+            services.AddDbContext<CommandContext>(opt => opt.UseSqlServer
+            (Configuration.GetConnectionString(builder.ConnectionString)));
+
             services.AddControllers(); //
-            services.AddScoped<ICommandApiRepo, MockCommandApiRepo>();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            // services.AddScoped<ICommandApiRepo, MockCommandApiRepo>();
+            services.AddScoped<ICommandApiRepo, SqlCommandApiRepo>();
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
