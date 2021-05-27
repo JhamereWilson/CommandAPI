@@ -31,7 +31,7 @@ namespace CommandApi
             builder.Password = Configuration["Password"];
 
             services.AddDbContext<CommandContext>(opt => opt.UseSqlServer
-            (Configuration.GetConnectionString(builder.ConnectionString)));
+            (builder.ConnectionString));
 
             services.AddControllers(); //
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
