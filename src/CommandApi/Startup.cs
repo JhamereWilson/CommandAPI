@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CommandApi.Data;
+using CommandApi.DAL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json.Serialization;
 using AutoMapper;
 
 namespace CommandApi
@@ -33,7 +34,10 @@ namespace CommandApi
             services.AddDbContext<CommandContext>(opt => opt.UseSqlServer
             (builder.ConnectionString));
 
-            services.AddControllers(); //
+            services.AddControllers().AddNewtonsoftJson(s =>
+            {
+                s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            }); //
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             // services.AddScoped<ICommandApiRepo, MockCommandApiRepo>();
             services.AddScoped<ICommandApiRepo, SqlCommandApiRepo>();

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using CommandApi.Models;
 
-namespace CommandApi.Data
+namespace CommandApi.DAL
 {
     public class CommandContext : DbContext
     {

@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using CommandApi.Data;
+using CommandApi.DAL;
 using CommandApi.Models;
 using CommandApi.DTO;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 
 
 namespace CommandApi.Controllers
@@ -35,6 +36,60 @@ namespace CommandApi.Controllers
             }
             return Ok(_mapper.Map<CommandReadDTO>(commandItem));
         }
+
+        [HttpPost]
+        public ActionResult<CommandReadDTO> CreateCommand(CommandCreateDTO commandCreateDTO)
+        {
+            var commandModel = _mapper.Map<Command>(commandCreateDTO);
+            _repository.CreateCommand(commandModel);
+            _repository.SaveChanges();
+
+            var commandReadDTO = _mapper.Map<CommandReadDTO>(commandModel);
+            return CreatedAtRoute(nameof(GetCommandById),
+            new { Id = commandReadDTO.Id }, commandReadDTO
+            );
+
+        }
+
+        [HttpPatch]
+        public ActionResult PartialCommandUpdate(int id, JsonPatchDocument<CommandUpdateDTO> patchDoc)
+        {
+            var commandModelFromRepo = _repository.GetCommandById(id);
+            if (commandModelFromRepo == null)
+            {
+                return NotFound();
+            }
+            var commandToPatch = _mapper.Map<CommandUpdateDTO>(commandModelFromRepo);
+            patchDoc.ApplyTo(commandToPatch, ModelState);
+
+            if (!TryValidateModel(commandToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+            _mapper.Map(commandToPatch, commandModelFromRepo);
+            _repository.UpdateCommand(commandModelFromRepo);
+            _repository.SaveChanges();
+            return NoContent();
+
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult DeleteCommand(int id)
+        {
+            var commandModelFromRepo = _repository.GetCommandById(id);
+            if (commandModelFromRepo == null)
+            {
+                return NotFound();
+            }
+            _repository.DeleteCommand(commandModelFromRepo);
+            _repository.SaveChanges();
+            return NoContent();
+
+
+
+        }
+
+
     }
 
 
